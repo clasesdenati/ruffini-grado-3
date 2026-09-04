@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Regla de Ruffini — @clasesdenati</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4ff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem 1rem;
+    }
+
+    .tarjeta {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 20px;
+      color: #333;
+      margin-bottom: 0.3rem;
+    }
+
+    .subtitulo {
+      text-align: center;
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 1.8rem;
+    }
+
+    /* ── SECCIÓN ── */
+    .seccion {
+      margin-bottom: 1.4rem;
+    }
+
+    .seccion label {
+      display: block;
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    /* ── FILA DE INPUTS ── */
+    .fila-inputs {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .grupo-input {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .grupo-input span {
+      font-size: 11px;
+      color: #aaa;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 6px;
+      font-size: 18px;
+      text-align: center;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="number"]:focus {
+      border-color: #4a7eff;
+    }
+
+    /* ── INPUT RAÍZ ── */
+    .input-raiz-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .input-raiz-wrap span {
+      font-size: 15px;
+      color: #555;
+    }
+
+    input.raiz {
+      width: 90px;
+      padding: 10px;
+      font-size: 18px;
+      text-align: center;
+      border: 2px solid #ff9800;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    input.raiz:focus {
+      border-color: #e65100;
+    }
+
+    /* ── BOTÓN ── */
+    .btn-calcular {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      background: #4a7eff;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: background 0.2s;
+    }
+
+    .btn-calcular:hover { background: #2a5edd; }
+
+    /* ── ERROR ── */
+    .error {
+      color: #e03e3e;
+      font-size: 13px;
+      text-align: center;
+      margin-top: 8px;
+      min-height: 18px;
+    }
+
+    /* ── RESULTADO ── */
+    .resultado {
+      margin-top: 1.8rem;
+      display: none;
+    }
+
+    .resultado h2 {
+      font-size: 15px;
+      color: #333;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    /* ── TABLA RUFFINI ── */
+    .tabla-ruffini {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+      font-size: 18px;
+    }
+
+    .tabla-ruffini td {
+      text-align: center;
+      padding: 10px 6px;
+      min-width: 44px;
+    }
+
+    .fila-coef td {
+      font-weight: bold;
+      color: #222;
+      border-bottom: 2px solid #4a7eff;
+    }
+
+    .celda-raiz {
+      background: #fff3e0;
+      border-radius: 6px;
+      color: #e65100 !important;
+      font-weight: bold;
+    }
+
+    .fila-bajada td {
+      color: #888;
+      font-size: 14px;
+    }
+
+    .fila-resultado td {
+      font-weight: bold;
+      color: #4a7eff;
+      border-top: 2px solid #4a7eff;
+      padding-top: 8px;
+    }
+
+    .celda-resto {
+      color: #2a9d5c !important;
+    }
+
+    /* ── FICHAS DE RESPUESTA ── */
+    .fichas {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .ficha {
+      background: #f8f9ff;
+      border: 1px solid #e0e7ff;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .ficha .etiqueta {
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .ficha .valor {
+      font-size: 14px;
+      color: #333;
+      font-weight: bold;
+      word-break: break-all;
+    }
+
+    .ficha.resto .valor {
+      color: #2a9d5c;
+    }
+
+    /* ── BOTÓN LIMPIAR ── */
+    .btn-limpiar {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      background: #f5f5f5;
+      color: #555;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    .btn-limpiar:hover { background: #eee; }
+  </style>
+</head>
+<body>
+
+<div class="tarjeta">
+  <h1>Regla de Ruffini</h1>
+  <p class="subtitulo">Polinomio de grado 3 · @clasesdenati</p>
+
+  <!-- COEFICIENTES -->
+  <div class="seccion">
+    <label>Coeficientes del polinomio P(x) = ax³ + bx² + cx + d</label>
+    <div class="fila-inputs">
+      <div class="grupo-input">
+        <span>a (x³)</span>
+        <input type="number" id="a" placeholder="a">
+      </div>
+      <div class="grupo-input">
+        <span>b (x²)</span>
+        <input type="number" id="b" placeholder="b">
+      </div>
+      <div class="grupo-input">
+        <span>c (x)</span>
+        <input type="number" id="c" placeholder="c">
+      </div>
+      <div class="grupo-input">
+        <span>d (ind.)</span>
+        <input type="number" id="d" placeholder="d">
+      </div>
+    </div>
+  </div>
+
+  <!-- RAÍZ -->
+  <div class="seccion">
+    <label>Raíz (divisor x − r)</label>
+    <div class="input-raiz-wrap">
+      <span>x −</span>
+      <input type="number" id="raiz" class="raiz" placeholder="r">
+    </div>
+  </div>
+
+  <button class="btn-calcular" onclick="calcular()">Calcular Ruffini</button>
+  <div class="error" id="error"></div>
+
+  <!-- RESULTADO -->
+  <div class="resultado" id="resultado">
+    <h2>Resultado</h2>
+
+    <!-- Tabla visual de Ruffini -->
+    <table class="tabla-ruffini">
+      <tr class="fila-coef">
+        <td></td>
+        <td id="td-a">—</td>
+        <td id="td-b">—</td>
+        <td id="td-c">—</td>
+        <td id="td-d">—</td>
+      </tr>
+      <tr class="fila-bajada">
+        
+        <td class="celda-raiz" id="td-raiz">—</td>
+        <td>↓</td>
+        <td id="td-m1">—</td>
+        <td id="td-m2">—</td>
+        <td id="td-m3">—</td>
+      </tr>
+      <tr class="fila-resultado">
+        <td></td>
+        <td id="td-r0">—</td>
+        <td id="td-r1">—</td>
+        <td id="td-r2">—</td>
+        <td class="celda-resto" id="td-r3">—</td>
+      </tr>
+    </table>
+
+    <!-- Fichas -->
+    <div class="fichas">
+      <div class="ficha">
+        <div class="etiqueta">Dividendo P(x)</div>
+        <div class="valor" id="f-dividendo">—</div>
+      </div>
+      <div class="ficha">
+        <div class="etiqueta">Divisor D(x)</div>
+        <div class="valor" id="f-divisor">—</div>
+      </div>
+      <div class="ficha">
+        <div class="etiqueta">Cociente Q(x)</div>
+        <div class="valor" id="f-cociente">—</div>
+      </div>
+      <div class="ficha resto">
+        <div class="etiqueta">Resto R</div>
+        <div class="valor" id="f-resto">—</div>
+      </div>
+    </div>
+
+    <button class="btn-limpiar" onclick="limpiar()">Limpiar y hacer otro</button>
+  </div>
+</div>
+
+<script>
+  /* ── FORMATEAR POLINOMIO ── */
+  function formatearPoli(coefs, grado) {
+    // coefs = [q0, q1, q2] para grado 2, por ejemplo
+    let terminos = [];
+    let g = grado;
+    for (let i = 0; i < coefs.length; i++) {
+      let c = coefs[i];
+      if (c === 0) { g--; continue; }
+
+      let signo = (terminos.length === 0) ? '' : (c > 0 ? ' + ' : ' − ');
+      let abs = Math.abs(c);
+      let coefStr = (abs === 1 && g > 0) ? '' : String(abs);
+
+      let termino = '';
+      if (g === 0) termino = String(abs);
+      else if (g === 1) termino = coefStr + 'x';
+      else termino = coefStr + 'x' + superindice(g);
+
+      terminos.push(signo + termino);
+      g--;
+    }
+    if (terminos.length === 0) return '0';
+    // fix: primer término negativo
+    let resultado = terminos.join('');
+    if (coefs[0] < 0 && resultado[0] !== '−') resultado = '−' + resultado;
+    if (coefs.find((v,i) => v < 0 && terminos[0] === '') ) {}
+    return resultado;
+  }
+
+  function superindice(n) {
+    const sup = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+    return String(n).split('').map(d => sup[d]).join('');
+  }
+
+  /* ── CALCULAR ── */
+  function calcular() {
+    // Leer valores
+    const a = document.getElementById('a').value;
+    const b = document.getElementById('b').value;
+    const c = document.getElementById('c').value;
+    const d = document.getElementById('d').value;
+    const r = document.getElementById('raiz').value;
+    const errorDiv = document.getElementById('error');
+
+    // Validar
+    if (a === '' || b === '' || c === '' || d === '' || r === '') {
+      errorDiv.textContent = 'Completá todos los campos.';
+      return;
+    }
+    errorDiv.textContent = '';
+
+    const A = parseFloat(a);
+    const B = parseFloat(b);
+    const C = parseFloat(c);
+    const D = parseFloat(d);
+    const R = parseFloat(r);
+
+    if (A === 0) {
+      errorDiv.textContent = 'El coeficiente de x³ no puede ser 0.';
+      return;
+    }
+
+    /* ── ALGORITMO DE RUFFINI ── */
+    // Fila 1: coeficientes originales
+    // Paso a paso:
+    const r0 = A;                    // baja el primero
+    const m1 = r0 * R;              // multiplica por raíz
+    const r1 = B + m1;              // suma
+    const m2 = r1 * R;
+    const r2 = C + m2;
+    const m3 = r2 * R;
+    const r3 = D + m3;              // resto
+
+    /* ── TABLA ── */
+    document.getElementById('td-raiz').textContent = R;
+    document.getElementById('td-a').textContent = A;
+    document.getElementById('td-b').textContent = B;
+    document.getElementById('td-c').textContent = C;
+    document.getElementById('td-d').textContent = D;
+
+    document.getElementById('td-m1').textContent = m1;
+    document.getElementById('td-m2').textContent = m2;
+    document.getElementById('td-m3').textContent = m3;
+
+    document.getElementById('td-r0').textContent = r0;
+    document.getElementById('td-r1').textContent = r1;
+    document.getElementById('td-r2').textContent = r2;
+    document.getElementById('td-r3').textContent = r3;
+
+    /* ── FICHAS ── */
+    // Dividendo
+    let dividendo = formatPolinomio([A, B, C, D], 3);
+    document.getElementById('f-dividendo').textContent = dividendo;
+
+    // Divisor
+    let divisorStr = R >= 0 ? 'x − ' + R : 'x + ' + Math.abs(R);
+    document.getElementById('f-divisor').textContent = divisorStr;
+
+    // Cociente (grado 2)
+    let cociente = formatPolinomio([r0, r1, r2], 2);
+    document.getElementById('f-cociente').textContent = cociente;
+
+    // Resto
+    document.getElementById('f-resto').textContent = r3;
+
+    // Mostrar resultado
+    document.getElementById('resultado').style.display = 'block';
+    document.getElementById('resultado').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  /* ── FORMATEAR POLINOMIO (versión limpia) ── */
+  function formatPolinomio(coefs, gradoInicial) {
+    let resultado = '';
+    let g = gradoInicial;
+
+    for (let i = 0; i < coefs.length; i++) {
+      let c = coefs[i];
+
+      if (c === 0) { g--; continue; }
+
+      // Signo
+      if (resultado === '') {
+        if (c < 0) resultado += '−';
+      } else {
+        resultado += c > 0 ? ' + ' : ' − ';
+      }
+
+      let abs = Math.abs(c);
+
+      // Coeficiente + variable
+      if (g === 0) {
+        resultado += abs;
+      } else if (g === 1) {
+        resultado += (abs === 1 ? '' : abs) + 'x';
+      } else {
+        resultado += (abs === 1 ? '' : abs) + 'x' + superindice(g);
+      }
+
+      g--;
+    }
+
+    return resultado === '' ? '0' : resultado;
+  }
+
+  /* ── LIMPIAR ── */
+  function limpiar() {
+    ['a','b','c','d','raiz'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('resultado').style.display = 'none';
+    document.getElementById('error').textContent = '';
+    document.getElementById('a').focus();
+  }
+
+  /* ── ENTER: pasar al siguiente input ── */
+const inputs = ['a', 'b', 'c', 'd', 'raiz'];
+
+inputs.forEach((id, index) => {
+  document.getElementById(id).addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+
+      if (index < inputs.length - 1) {
+        document.getElementById(inputs[index + 1]).focus();
+      } else {
+        calcular();
+      }
+    }
+  });
+});
+</script>
+
+</body>
+</html>
