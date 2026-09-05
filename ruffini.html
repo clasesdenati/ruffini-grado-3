@@ -72,7 +72,23 @@
       font-size: 11px;
       color: #aaa;
     }
-
+    .btn-menos { 
+      width: 32px; 
+      flex-shrink: 0; 
+      padding: 0; 
+      font-size: 20px; 
+      font-weight: bold; 
+      color: #555; 
+      background: #f5f5f5; 
+      border: 2px solid #ddd; 
+      border-radius: 8px; 
+      cursor: pointer; 
+    } 
+  
+    .btn-menos:active { 
+      background: #e5e5e5; 
+    }
+    
     input[type="number"] {
       width: 100%;
       padding: 10px 6px;
@@ -114,6 +130,22 @@
       border-color: #e65100;
     }
 
+    .btn-menos-raiz { 
+      width: 32px; 
+      height: 43px; 
+      padding: 0; 
+      font-size: 20px; 
+      font-weight: bold; 
+      color: #555; 
+      background: #f5f5f5; 
+      border: 2px solid #ddd; 
+      border-radius: 8px; 
+      cursor: pointer; 
+    }
+    
+    .btn-menos-raiz:active { 
+      background: #e5e5e5; 
+    }
     /* ── BOTÓN ── */
     .btn-calcular {
       width: 100%;
@@ -258,18 +290,22 @@
     <div class="fila-inputs">
       <div class="grupo-input">
         <span>a (x³)</span>
+        <button type="button" class="btn-menos" onclick="ponerMenos('a')" >−</button>
         <input type="number" inputmode="decimal" id="a" placeholder="a">
       </div>
       <div class="grupo-input">
         <span>b (x²)</span>
+        <button type="button" class="btn-menos" onclick="ponerMenos('b')" >−</button>
         <input type="number" inputmode="decimal" id="b" placeholder="b">
       </div>
       <div class="grupo-input">
         <span>c (x)</span>
+        <button type="button" class="btn-menos" onclick="ponerMenos('c')" >−</button>
         <input type="number" inputmode="decimal" id="c" placeholder="c">
       </div>
       <div class="grupo-input">
         <span>d (ind.)</span>
+        <button type="button" class="btn-menos" onclick="ponerMenos('d')" >−</button>
         <input type="number" inputmode="decimal" id="d" placeholder="d">
       </div>
     </div>
@@ -342,6 +378,17 @@
 </div>
 
 <script>
+  /* ── PONER / QUITAR SIGNO MENOS ── */ 
+  function ponerMenos(id) { 
+    const input = document.getElementById(id); 
+    if (input.value.startsWith('-')) 
+    { 
+      input.value = input.value.substring(1); 
+    } else { 
+      input.value = '-' + input.value; 
+    } 
+    input.focus(); 
+      }
   /* ── FORMATEAR POLINOMIO ── */
   function formatearPoli(coefs, grado) {
     // coefs = [q0, q1, q2] para grado 2, por ejemplo
